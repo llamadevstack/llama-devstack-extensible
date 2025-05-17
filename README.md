@@ -7,7 +7,7 @@ A lightweight, self-hosted LLM development stack. Intended to be used with Conti
 Use the included batch installer (Windows):
 
 ```
-installer\install.bat
+.\installer\install.bat
 ```
 
 This will:
