@@ -2,37 +2,68 @@ const express = require('express');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const fs = require('fs');
 const path = require('path');
+const tiktoken = require('tiktoken'); // Example tokenizer library
 
 const app = express();
 const PORT = 3000;
+const TARGET_PORT = 8000;
+const logFilePath = path.join(__dirname, 'token-usage.log');
+
+// Initialize the tokenizer
+const encoding = tiktoken.get_encoding('cl100k_base');
 
 // Middleware to log token usage
+app.use(express.json()); // Ensure JSON body parsing
 app.use((req, res, next) => {
     const token = req.headers['authorization'] || 'No Token';
-    const logEntry = `${new Date().toISOString()} - Token: ${token} - Path: ${req.path}\n`;
+
+    const inputText = req.body?.messages?.map(m => m.content).join(' ') || req.body?.prompt || ''; // Check for 'content' in 'messages' or 'prompt'
+    const inputTokens = inputText ? encoding.encode(inputText).length : 0; // Count input tokens if text exists
+
+    const logEntry = `${new Date().toISOString()} - Token: ${token} - Path: ${req.path} - Input Tokens: ${inputTokens}`;
 
     // Log to a file
-    const logFilePath = path.join(__dirname, 'token-usage.log');
-    fs.appendFileSync(logFilePath, logEntry);
+    fs.appendFileSync(logFilePath, logEntry + '\n');
+
+    // Also log to the terminal
+    console.log(logEntry);
+
+    // Intercept response to count output tokens
+    const originalSend = res.send;
+    res.send = function (body) {
+        const outputText = typeof body === 'string' ? body : JSON.stringify(body);
+        const outputTokens = encoding.encode(outputText).length; // Count output tokens
+
+        const outputLogEntry = `${new Date().toISOString()} - Path: ${req.path} - Output Tokens: ${outputTokens}`;
+
+        // Log output tokens
+        fs.appendFileSync(logFilePath, outputLogEntry + '\n');
+        console.log(outputLogEntry);
+
+        return originalSend.call(this, body);
+    };
 
     next();
 });
 
-// Proxy configuration
-const services = {
-    '/phi2': 'http://localhost:8000', // Replace with actual phi2 server URL
-    '/rwkv': 'http://localhost:8001', // Replace with actual rwkv server URL
-};
-
-Object.keys(services).forEach((route) => {
-    app.use(route, createProxyMiddleware({
-        target: services[route],
-        changeOrigin: true,
-        pathRewrite: (path) => path.replace(route, ''),
-    }));
+// Endpoint to retrieve token usage logs
+app.get('/logs', (req, res) => {
+    if (fs.existsSync(logFilePath)) {
+        const logs = fs.readFileSync(logFilePath, 'utf-8');
+        res.type('text/plain').send(logs);
+    } else {
+        res.status(404).send('No logs available.');
+    }
 });
+
+// Proxy all other requests to port 8000
+app.use('/', createProxyMiddleware({
+    target: `http://127.0.0.1:${TARGET_PORT}`,
+    changeOrigin: true
+}));
 
 // Start the server
 app.listen(PORT, () => {
-    console.log(`Proxy server is running on http://localhost:${PORT}`);
+    console.log(`Proxy server is running on http://127.0.0.1:${PORT}, forwarding to http://127.0.0.1:${TARGET_PORT}`);
+    console.log(`Access token usage logs at http://127.0.0.1:${PORT}/logs`);
 });

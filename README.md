@@ -74,7 +74,7 @@ For Linux or macOS users, consider using a Python virtual environment manually:
 
 ## 🚀 Run a Model Server
 
-Run one of the following commands to start a server:
+Run one of the following commands to start a server on port 8000:
 
 ```
 .\servers\run_rwkv_server.bat
@@ -85,6 +85,16 @@ or
 ```
 
 Model files will download on first run.
+
+## 🚀 Run a Proxy Server to return token counts
+
+The proxy server will return token counts.  Run this command to start a node express server on port 3000 that will call the server on port 8000:
+
+```
+
+.\proxy-server\run_proxy_server.bat
+
+```
 
 ### API Endpoints
 
@@ -161,7 +171,7 @@ models:
   - name: Local
     provider: lmstudio
     model: rwkv
-    apiBase: http://localhost:8000/v1
+    apiBase: http://127.0.0.1:8000/v1
     roles: [chat, autocomplete, edit, apply, rerank]
     
 default_model: Local
