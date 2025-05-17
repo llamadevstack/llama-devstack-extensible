@@ -10,6 +10,6 @@ IF %ERRORLEVEL% NEQ 0 (
 )
 
 :: Run the PowerShell script to start the server
-powershell -ExecutionPolicy Bypass -File "servers\test\test_lmstudio_server.ps1"
+powershell -ExecutionPolicy Bypass -File "servers\test\test_8000_server.ps1"
 
 ENDLOCAL
