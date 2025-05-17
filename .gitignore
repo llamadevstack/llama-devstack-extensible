@@ -1,0 +1,9 @@
+# Ignore virtual environments
+venv/
+
+# Ignore models directory
+models/
+
+# Ignore cache or logs
+__pycache__/
+logs/
