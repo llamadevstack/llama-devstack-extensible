@@ -1,34 +1,58 @@
-# llama-devstack
+# llama-devstack-extensible
 
-A lightweight, self-hosted LLM development stack using TinyLlama and `llama-cpp-python`. Python 3.13 compatible.
+A lightweight, self-hosted LLM development stack. Intended to be used with Continue.dev to serve local models.
 
 ## 🛠 Setup
 
 Use the included batch installer (Windows):
 
 ```
-scripts\install.bat
+installer\install.bat
 ```
 
 This will:
-- Create a virtual environment
+- Create a Python 3.11 virtual environment
 - Install all dependencies (CPU-only)
 - Set up everything needed to run the server
 
-## 🚀 Run the Model Server
+## 🚀 Run a Model Server
 
 ```
-venv\Scripts\activate
-python llama_devstack_server.py
+.\servers\run_rwkv_server.bat
+
+or
+
+.\servers\run_phi2_server.bat
 ```
 
-The model will download on first run (~500MB).
+Model files will download on first run.
 
 ## 🧠 Use with Continue.dev
 
 Point Continue.dev to:
 ```
-http://localhost:8000/generate
+Configure your config.yaml file to look something like this:
+
+name: Local Assistant
+version: 1.0.0
+schema: v1
+
+models:
+  - name: Llama3.1 405b (Free Trial)
+    provider: free-trial
+    model: llama3.1-405b
+
+  - name: Local
+    provider: lmstudio
+    model: rwkv
+    apiBase: http://localhost:8000/v1
+    roles: [chat, autocomplete, edit, apply, rerank]
+    
+default_model: Local
+
+
+
+
 ```
 
 Request format:
