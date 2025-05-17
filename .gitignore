@@ -7,3 +7,6 @@ models/
 # Ignore cache or logs
 __pycache__/
 logs/
+
+# Ignore node_modules directory
+node_modules/
