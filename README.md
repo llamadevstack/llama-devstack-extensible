@@ -2,6 +2,46 @@
 
 A lightweight, self-hosted LLM development stack. Intended to be used with Continue.dev to serve local models.
 
+## 📦 Prerequisites
+
+Before setting up the project, ensure you have the following software installed:
+
+1. **Visual Studio Code**
+   - Download: [https://code.visualstudio.com/](https://code.visualstudio.com/)
+
+2. **Node.js**
+   - Download: [https://nodejs.org/](https://nodejs.org/)
+
+3. **Python**
+   - Any version of Python is required for general use.
+   - Python 3.11 is specifically required for this project.
+   - Download: [https://www.python.org/downloads/](https://www.python.org/downloads/)
+
+4. **Continue.dev Plugin for VS Code**
+   - Install the Continue.dev plugin from the Visual Studio Code Marketplace.
+   - Marketplace Link: [https://marketplace.visualstudio.com/items?itemName=Continue.continue](https://marketplace.visualstudio.com/items?itemName=Continue.continue)
+
+Ensure all the above software is installed and properly configured before proceeding with the setup.
+
+## 📂 Quick Start with NPX
+
+You can quickly set up this project in a new directory using a single `npx` command. This will clone the repository and prepare the environment for you.
+
+1. Open a terminal and run the following command:
+   ```bash
+   npx degit llamadevstack/llama-devstack-extensible my-llama-project
+   ```
+
+   - This will create a new directory named `my-llama-project` and copy the project files into it.
+   - Replace `my-llama-project` with your desired directory name if needed.
+
+2. Navigate to the project directory:
+   ```bash
+   cd my-llama-project
+   ```
+
+3. Follow the setup instructions in the [Setup](#-setup) section to complete the installation.
+
 ## 🛠 Setup
 
 Use the included batch installer (Windows):
