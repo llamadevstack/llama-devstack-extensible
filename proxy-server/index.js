@@ -22,13 +22,13 @@ app.use((req, res, next) => {
     const logEntry = `${new Date().toISOString()} - Token: ${token} - Path: ${req.path} - Input Tokens: ${inputTokens}`;
 
     // Also log to the terminal
-    console.log(logEntry);
+    // console.log(logEntry);
 
     // Intercept response to count output tokens
     const originalSend = res.send;
     res.send = function (body) {
-        const outputText = typeof body === 'string' ? body : JSON.stringify(body);
-        const outputTokens = encoding.encode(outputText).length; // Count output tokens
+        const outputText = typeof body === 'string' ? body : body?.choices?.map(c => c.text).join(' ') || ''; // Extract 'text' from 'choices'
+        const outputTokens = outputText ? encoding.encode(outputText).length : 0; // Count output tokens if text exists
 
         const outputLogEntry = `${new Date().toISOString()} - Path: ${req.path} - Output Tokens: ${outputTokens}`;
 

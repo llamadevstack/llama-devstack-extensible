@@ -172,7 +172,13 @@ models:
     provider: lmstudio
     model: rwkv
     apiBase: http://127.0.0.1:8000/v1
-    roles: [chat, autocomplete, edit, apply, rerank]
+    roles: [chat, autocomplete, edit, apply]
+
+  - name: Local (Token Usage via Node)
+    provider: lmstudio
+    model: rwkv
+    apiBase: http://127.0.0.1:3000/v1
+    roles: [chat, autocomplete, edit, apply]
     
 default_model: Local
 ```
