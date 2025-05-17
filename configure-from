@@ -1,0 +1,108 @@
+#!/usr/bin/env python3
+
+import json, os
+
+config_path = "llama-dev.config.json"
+custom_prompts_dir = "custom-prompts"
+continue_config_path = os.path.join(".continue", "config.json")
+os.makedirs(".continue", exist_ok=True)
+
+with open(config_path, "r") as f:
+    user_config = json.load(f)
+
+log_suffix = "with Logging" if user_config.get("log_requests") else "No Logging"
+phi_url = f"http://localhost:{user_config['local_models']['phi']}/api/completion"
+mistral_url = f"http://localhost:{user_config['local_models']['mistral']}/api/completion"
+mcp_url = "http://localhost:5001/mcp/context"
+
+config = {
+  "models": [
+    {
+      "title": "Local Fast Model (Autocomplete)",
+      "provider": "ollama",
+      "model": user_config["autocomplete_model"]
+    }
+  ],
+  "preprocessors": [],
+  "prompts": []
+}
+
+# Preprocessors
+if user_config.get("use_mcp"):
+    config["preprocessors"].append({
+        "name": f"MCP Router ({log_suffix})",
+        "type": "webserver",
+        "url": mcp_url,
+        "method": "POST"
+    })
+
+config["preprocessors"].append({
+    "name": f"Phi-2 ({log_suffix})",
+    "type": "webserver",
+    "url": phi_url,
+    "method": "POST"
+})
+
+config["preprocessors"].append({
+    "name": f"Mistral ({log_suffix})",
+    "type": "webserver",
+    "url": mistral_url,
+    "method": "POST"
+})
+
+# Built-in prompt sets
+if "summarize" in user_config["prompt_sets"]:
+    config["prompts"].append({
+        "name": f"Summarize File ({log_suffix})",
+        "context": "current-file",
+        "preprocessor": f"Phi-2 ({log_suffix})",
+        "prompt": "Summarize this file and describe what each function or class does."
+    })
+
+if "generate_tests" in user_config["prompt_sets"]:
+    config["prompts"].append({
+        "name": f"Generate Tests for Repository ({log_suffix})",
+        "context": "repository",
+        "preprocessor": f"Mistral ({log_suffix})",
+        "prompt": "Generate unit tests and integration tests for the main components of this repository."
+    })
+
+if "refactor_code" in user_config["prompt_sets"]:
+    config["prompts"].append({
+        "name": f"Improve Function ({log_suffix})",
+        "context": "selection",
+        "preprocessor": f"Mistral ({log_suffix})",
+        "prompt": "Improve the clarity, style, and performance of this code."
+    })
+
+if "apply_standards" in user_config["prompt_sets"]:
+    config["prompts"].append({
+        "name": f"Apply Coding Standards ({log_suffix})",
+        "context": "current-file",
+        "preprocessor": f"Mistral ({log_suffix})",
+        "prompt": (
+            "Review this code and update it to conform with our coding standards:\n"
+            "- Use descriptive variable names\n"
+            "- Use consistent indentation (2 spaces)\n"
+            "- Include docstrings for functions and classes\n"
+            "- Avoid deeply nested conditionals when possible\n"
+            "- Use type hints where appropriate\n"
+            "- Follow PEP8 styling rules\n"
+            "Only modify the code to improve standards compliance."
+        )
+    })
+
+# Load any matching custom prompt sets
+for name in user_config["prompt_sets"]:
+    custom_file = os.path.join(custom_prompts_dir, f"{name}.json")
+    if os.path.exists(custom_file):
+        with open(custom_file, "r") as custom:
+            content = json.load(custom)
+            if "prompts" in content:
+                config["prompts"].extend(content["prompts"])
+
+# Write the final .continue config
+with open(continue_config_path, "w") as outf:
+    json.dump(config, outf, indent=2)
+
+print("✔️ .continue/config.json configured from llama-dev.config.json")

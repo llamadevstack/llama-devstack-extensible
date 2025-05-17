@@ -26,10 +26,9 @@ pip install torch --index-url https://download.pytorch.org/whl/cpu
 
 # Install remaining dependencies
 Write-Host "Installing remaining packages from pythonrequirements.txt..."
-pip install -r scripts\pythonrequirements.txt
-
-Write-Host "llama-devstack setup complete using Python 3.11. You can now run any of the servers in /servers"
-
+pip install -r installer\pythonrequirements.txt
 
 # Run patch to fix torch.load weights_only issue
-.\scripts\patch.ps1
+.\installer\patch.ps1
+
+Write-Host "llama-devstack setup complete using Python 3.11. You can now run any of the servers in /servers"

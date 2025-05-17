@@ -1,0 +1,15 @@
+{
+  "autocomplete_model": "phi",
+  "log_requests": true,
+  "prompt_sets": [
+    "summarize",
+    "generate_tests",
+    "refactor_code",
+    "apply_standards"
+  ],
+  "use_mcp": true,
+  "local_models": {
+    "phi": 11434,
+    "mistral": 11435
+  }
+}

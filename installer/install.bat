@@ -12,6 +12,6 @@ IF %ERRORLEVEL% NEQ 0 (
 )
 
 :: Run the PowerShell install script
-powershell -ExecutionPolicy Bypass -File "scripts\install.ps1"
+powershell -ExecutionPolicy Bypass -File "installer\install.ps1"
 
 ENDLOCAL

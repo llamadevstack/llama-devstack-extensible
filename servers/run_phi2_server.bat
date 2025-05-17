@@ -10,6 +10,6 @@ IF %ERRORLEVEL% NEQ 0 (
 )
 
 :: Run the PowerShell script to start the server
-powershell -ExecutionPolicy Bypass -File "scripts\run_rwkv_server.ps1"
+powershell -ExecutionPolicy Bypass -File "servers\run_phi2_server.ps1"
 
 ENDLOCAL

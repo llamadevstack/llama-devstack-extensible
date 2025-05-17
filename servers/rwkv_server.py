@@ -135,4 +135,5 @@ async def completions(request: Request, req: CompletionRequest):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("rwkv_server:app", host="127.0.0.1", port=8000, reload=True,  reload_includes=["rwkv_server.py"])
+    uvicorn.run("rwkv_server:app", host="127.0.0.1", port=8000)
+
