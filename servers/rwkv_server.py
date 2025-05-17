@@ -2,6 +2,7 @@ import os
 import requests
 import uuid
 from typing import List, Literal
+import torch
 
 from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse
@@ -21,6 +22,10 @@ MODEL_DIR = "models"
 MODEL_FILENAME = "RWKV-4-World-0.1B-v1-20230520-ctx4096.pth"
 MODEL_PATH = os.path.join(MODEL_DIR, MODEL_FILENAME)
 MODEL_URL = "https://huggingface.co/BlinkDL/rwkv-4-world/resolve/main/RWKV-4-World-0.1B-v1-20230520-ctx4096.pth"
+
+# Detect device (GPU or CPU)
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print(f"Using device: {device}")
 
 def download_model():
     os.makedirs(MODEL_DIR, exist_ok=True)
@@ -48,7 +53,7 @@ if not os.path.exists(MODEL_PATH):
     download_model()
 
 print("Loading RWKV model...")
-model = RWKV(model=MODEL_PATH, strategy="cpu fp32")
+model = RWKV(model=MODEL_PATH, strategy="cuda fp16" if torch.cuda.is_available() else "cpu fp32")
 pipeline = PIPELINE(model, "rwkv_vocab_v20230424")
 print("RWKV model ready.")
 

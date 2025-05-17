@@ -20,13 +20,17 @@ CACHE_DIR = "models"
 # Ensure models directory exists
 os.makedirs(CACHE_DIR, exist_ok=True)
 
+# Detect device (GPU or CPU)
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print(f"Using device: {device}")
+
 print(f"Loading Phi-2 model: {MODEL_NAME}...")
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME, cache_dir=CACHE_DIR)
 
 # Set pad token to eos token to allow padding
 tokenizer.pad_token = tokenizer.eos_token
 
-model = AutoModelForCausalLM.from_pretrained(MODEL_NAME, torch_dtype=torch.float32, cache_dir=CACHE_DIR)
+model = AutoModelForCausalLM.from_pretrained(MODEL_NAME, torch_dtype=torch.float32, cache_dir=CACHE_DIR).to(device)
 model.eval()
 print("Phi-2 model ready.")
 
@@ -49,7 +53,7 @@ async def chat_completions(request: Request, req: ChatCompletionRequest):
     logging.debug(f"Received request body: {req}")
     prompt = "\n".join([m.content for m in req.messages if m.role == "user"])
 
-    inputs = tokenizer(prompt, return_tensors="pt", padding=True, truncation=True)
+    inputs = tokenizer(prompt, return_tensors="pt", padding=True, truncation=True).to(device)
     input_ids = inputs["input_ids"]
     attention_mask = inputs["attention_mask"]
 
