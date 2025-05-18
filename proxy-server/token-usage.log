@@ -1,5 +1,0 @@
-2025-05-17T22:32:23.607Z - Token: No Token - Path: /v1/completions - Input Tokens: 5
-2025-05-17T22:33:09.337Z - Token: Bearer - Path: /v1/chat/completions - Input Tokens: 1723
-2025-05-17T22:34:28.307Z - Token: Bearer - Path: /v1/chat/completions - Input Tokens: 477
-2025-05-17T22:42:29.325Z - Token: Bearer - Path: /v1/chat/completions - Input Tokens: 477
-2025-05-17T22:42:29.339Z - Token: Bearer - Path: /v1/chat/completions - Input Tokens: 1723

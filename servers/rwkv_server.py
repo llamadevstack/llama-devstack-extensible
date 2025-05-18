@@ -54,7 +54,16 @@ if not os.path.exists(MODEL_PATH):
 
 print("Loading RWKV model...")
 model = RWKV(model=MODEL_PATH, strategy="cuda fp16" if torch.cuda.is_available() else "cpu fp32")
-pipeline = PIPELINE(model, "rwkv_vocab_v20230424")
+
+# Add logging to confirm successful initialization of the pipeline object
+logging.debug("Initializing RWKV pipeline...")
+try:
+    pipeline = PIPELINE(model, "rwkv_vocab_v20230424")
+    logging.debug("Pipeline initialized successfully.")
+except Exception as e:
+    logging.error(f"Error initializing pipeline: {e}")
+    raise
+
 print("RWKV model ready.")
 
 # --- FastAPI Setup ---
@@ -71,16 +80,23 @@ class ChatCompletionRequest(BaseModel):
     max_tokens: int = 100
     stream: bool = False
 
+# Add debugging logs to trace the flow of execution and identify potential issues
 @app.post("/v1/chat/completions")
 async def chat_completions(request: Request, req: ChatCompletionRequest):
     logging.debug(f"Received request body: {req}")
     prompt = "\n".join([m.content for m in req.messages if m.role == "user"])
     args = PIPELINE_ARGS(temperature=1.0, top_p=0.8, top_k=40)
 
+    # Add logging to capture the state of the model and pipeline objects before calling pipeline.generate
+    logging.debug(f"Model state: {model}")
+    logging.debug(f"Pipeline state: {pipeline}")
+
     if req.stream:
         def token_stream():
             try:
+                logging.debug("Starting token stream generation...")
                 for token in pipeline.generate(prompt, token_count=req.max_tokens, args=args):
+                    logging.debug(f"Generated token: {token}")
                     chunk = {
                         "choices": [{
                             "delta": {
@@ -95,25 +111,32 @@ async def chat_completions(request: Request, req: ChatCompletionRequest):
                 # Final stop message
                 yield f"data: {json.dumps({'choices': [{'delta': {}, 'finish_reason': 'stop', 'index': 0}]})}\n\n"
             except Exception as e:
+                logging.error(f"Error during token stream generation: {e}")
                 yield f"data: {json.dumps({'error': str(e)})}\n\n"
 
         return StreamingResponse(token_stream(), media_type="text/event-stream")
 
     else:
-        output = pipeline.generate(prompt, token_count=req.max_tokens, args=args)
-        return {
-            "id": f"chatcmpl-{uuid.uuid4()}",
-            "object": "chat.completion",
-            "choices": [{
-                "index": 0,
-                "message": {
-                    "role": "assistant",
-                    "content": output
-                },
-                "finish_reason": "stop"
-            }],
-            "model": req.model
-        }
+        try:
+            logging.debug("Generating output...")
+            output = pipeline.generate(prompt, token_count=req.max_tokens, args=args)
+            logging.debug(f"Generated output: {output}")
+            return {
+                "id": f"chatcmpl-{uuid.uuid4()}",
+                "object": "chat.completion",
+                "choices": [{
+                    "index": 0,
+                    "message": {
+                        "role": "assistant",
+                        "content": output
+                    },
+                    "finish_reason": "stop"
+                }],
+                "model": req.model
+            }
+        except Exception as e:
+            logging.error(f"Error during output generation: {e}")
+            return {"error": str(e)}
 
 # --- OpenAI-compatible Completion Endpoint for Autocomplete ---
 class CompletionRequest(BaseModel):
