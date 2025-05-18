@@ -26,7 +26,7 @@ pip install torch --index-url https://download.pytorch.org/whl/cpu
 
 # Install remaining dependencies
 Write-Host "Installing remaining packages from pythonrequirements.txt..."
-pip install -r installer\pythonrequirements.txt
+pip install -r installer\requirements.txt
 
 # Run patch to fix torch.load weights_only issue
 .\installer\patch.ps1
